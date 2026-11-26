@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>디톡스vs 관리자</title>
+<style>
+:root{--bg:#F3F5F8;--paper:#fff;--tx:#18212F;--tx2:#4A5567;--sub:#8D97A8;--line:#E6E9EE;--blue:#2557E6;--blue2:#1A3FB5;--soft:#EAF0FF;--red:#E5443A;--redsoft:#FDECEA;--ok:#0E9F6E;--oksoft:#E3F7EE;--warn:#B54708;--warnsoft:#FEF0C7}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+h1,h2,h3{margin:0}
+.wrap{display:grid;grid-template-columns:208px 1fr;min-height:100vh}
+nav{background:linear-gradient(170deg,var(--blue),var(--blue2));color:#fff;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+nav .lg{font-size:21px;font-weight:800;padding:0 10px 18px;letter-spacing:-.3px}
+nav .lg small{display:block;font-size:12px;font-weight:600;opacity:.7;margin-top:2px}
+nav button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:10px 12px;border-radius:10px;color:rgba(255,255,255,.78);font-weight:600}
+nav button:hover{background:rgba(255,255,255,.1)}
+nav button.on{background:#fff;color:var(--blue)}
+nav .cnt{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#FFE066;color:#3B2F00;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+nav .sp{flex:1}
+nav .who{font-size:12px;opacity:.75;padding:0 12px 6px;word-break:break-all}
+main{padding:28px 32px 60px;min-width:0}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.head h1{font-size:22px;font-weight:800;flex:1}
+.card{background:var(--paper);border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat .l{font-size:13px;color:var(--tx2);font-weight:600}
+.stat .v{font-size:30px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1.25}
+.stat .s{font-size:12px;color:var(--sub)}
+.stat.alert{box-shadow:inset 0 0 0 2px #FFD43B}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card h2{font-size:15px;font-weight:800;margin-bottom:2px}
+.card .cap{font-size:12.5px;color:var(--sub);margin-bottom:10px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:150px;overflow:visible}
+.chart .bar{fill:var(--blue)}
+.chart .hit{fill:transparent}
+.chart .hit:hover + .bar,.chart .bar.h{fill:var(--blue2)}
+.chart text{font-size:11px;fill:var(--sub)}
+.chart text.val{fill:var(--tx);font-weight:700}
+.tip{position:absolute;pointer-events:none;background:var(--tx);color:#fff;font-size:12px;font-weight:600;padding:5px 9px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);display:none}
+.bar-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.inp{height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;outline:none;min-width:0}
+.inp:focus{border-color:var(--blue)}
+textarea.inp{height:auto;padding:10px 12px;width:100%;resize:vertical;line-height:1.5}
+.seg{display:inline-flex;background:#E9ECF1;border-radius:10px;padding:3px}
+.seg button{padding:7px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--tx2)}
+.seg button.on{background:#fff;color:var(--tx);box-shadow:0 1px 2px rgba(16,24,40,.12)}
+.btn{height:40px;padding:0 16px;border-radius:10px;background:var(--blue);color:#fff;font-weight:700}
+.btn:hover{background:var(--blue2)}
+.btn.sec{background:#fff;color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.sec:hover{background:#F7F8FA}
+.btn.bad{background:var(--red)}
+.btn.sm{height:32px;padding:0 11px;font-size:13px;border-radius:8px}
+.btn[disabled]{opacity:.5;cursor:default}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--sub);font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.s{cursor:pointer}th.s:hover{color:var(--tx)}th.on{color:var(--blue)}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr.row{cursor:pointer}tr.row:hover td{background:#F8FAFF}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow-x:auto;margin:0 -8px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EEF0F4;color:var(--tx2);white-space:nowrap}
+.pill.b{background:var(--soft);color:var(--blue)}.pill.r{background:var(--redsoft);color:var(--red)}.pill.g{background:var(--oksoft);color:var(--ok)}.pill.w{background:var(--warnsoft);color:var(--warn)}
+.sub{color:var(--sub);font-size:12.5px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--sub);word-break:break-all}
+.fb{padding:14px 0;border-bottom:1px solid var(--line)}.fb:last-child{border-bottom:0}
+.fb .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.fb .body{white-space:pre-wrap;word-break:break-word}
+.fb .tg{margin-top:6px;font-size:13px;color:var(--tx2);background:#F7F8FA;border-radius:8px;padding:7px 10px}
+.fb .act{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.fb .note{flex:1;min-width:160px;height:32px;font-size:13px}
+.pg{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}
+.empty{text-align:center;color:var(--sub);padding:36px 0}
+.dr{position:fixed;inset:0;background:rgba(16,24,40,.4);display:none;justify-content:flex-end;z-index:10}
+.dr.on{display:flex}
+.dr .in{width:min(460px,100%);background:#fff;height:100%;overflow:auto;padding:24px}
+.dr h2{font-size:19px;font-weight:800}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv span:first-child{color:var(--tx2)}
+.sec{margin-top:20px}.sec h3{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:6px}
+.days{display:flex;gap:6px;align-items:flex-end;height:84px}
+.days div{flex:1;text-align:center;font-size:11px;color:var(--sub);display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.days i{display:block;background:var(--blue);border-radius:4px 4px 0 0;min-height:2px;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--tx);color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login .card{width:min(380px,100%);padding:28px}
+.login h1{font-size:24px;font-weight:800;color:var(--blue)}
+.login label{display:block;font-size:13px;font-weight:700;color:var(--tx2);margin:14px 0 6px}
+.login .inp{width:100%;height:46px}
+.login .btn{width:100%;height:48px;margin-top:18px}
+.err{color:var(--red);font-size:13.5px;margin-top:10px;min-height:20px}
+.demo{background:#FFF4CC;color:#5C4400;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;margin-bottom:14px}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}nav .lg{width:100%;padding-bottom:8px}nav button{width:auto}nav .sp,nav .who{display:none}main{padding:18px 14px 50px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="dr" id="dr"><div class="in" id="drIn"></div></div>
+<div class="toast" id="toast"></div>
+<script src="../config.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = function (q) { return document.querySelector(q); };
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('on'); }, 2400); }
+function fmtSec(s) { s = Math.round(s || 0); var m = Math.floor(s / 60), h = Math.floor(m / 60); return h ? h + '시간 ' + (m % 60) + '분' : m + '분'; }
+function kst(t) { return new Date(new Date(t).getTime() + 9 * 3600e3); }
+function dt(t) { if (!t) return '–'; var d = kst(t); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + ' ' + ('0' + d.getUTCHours()).slice(-2) + ':' + ('0' + d.getUTCMinutes()).slice(-2); }
+function day(t) { var d = kst(t); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
+function ago(t) { if (!t) return '기록 없음'; var s = (Date.now() - new Date(t).getTime()) / 1000; if (s < 90) return '방금'; if (s < 3600) return Math.floor(s / 60) + '분 전'; if (s < 86400) return Math.floor(s / 3600) + '시간 전'; return Math.floor(s / 86400) + '일 전'; }
+var TN = { yt_shorts: '쇼츠', youtube: '유튜브', ig_reels: '릴스', instagram: '인스타', tiktok: '틱톡', games: '게임', facebook: '페이스북', x: 'X', threads: '스레드', internet: '인터넷', blind: '블라인드', kakao: '카카오톡' };
+
+var CFG = window.DETOXVS || {}, DEMO = /[?&]demo/.test(location.search);
+try { var saved = JSON.parse(localStorage.getItem('detoxvs_admin_cfg') || 'null'); if (saved && !CFG.supabaseUrl) CFG = saved; } catch (e) { }
+var S = { view: 'home', tok: null, email: '', stats: null, fb: { kind: 'ask', status: 'new', off: 0 }, us: { q: '', sort: 'new', off: 0 }, gr: { q: '', off: 0 } };
+try { var ss = JSON.parse(sessionStorage.getItem('detoxvs_admin') || 'null'); if (ss && ss.exp > Date.now()) { S.tok = ss.tok; S.email = ss.email; } } catch (e) { }
+var PAGE = 50;
+
+/* ---- 서버 호출 ---- */
+function rpc(fn, args) {
+  if (DEMO) return new Promise(function (res, rej) { setTimeout(function () { try { res(JSON.parse(JSON.stringify(demo[fn](args || {})))); } catch (e) { rej(e); } }, 80); });
+  return fetch(CFG.supabaseUrl + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + S.tok, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) })
+    .then(function (r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { } if (r.status === 401) { logout(); throw new Error('로그인이 만료됐어요'); } if (!r.ok) throw new Error((j && (j.message || j.error_description)) || '요청에 실패했어요'); return j; }); });
+}
+function login(email, pw) {
+  return fetch(CFG.supabaseUrl + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: pw }) })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error('이메일 또는 비밀번호가 맞지 않아요'); return j; }); })
+    .then(function (j) {
+      S.tok = j.access_token; S.email = email;
+      return rpc('admin_me').then(function (ok) {
+        if (!ok) { S.tok = null; throw new Error('관리자 권한이 없는 계정이에요'); }
+        // 창을 닫으면 사라지는 저장소에만 두고, 토큰 만료 시각까지만 쓴다
+        sessionStorage.setItem('detoxvs_admin', JSON.stringify({ tok: S.tok, email: email, exp: Date.now() + (j.expires_in || 3600) * 1000 - 60000 }));
+      });
+    });
+}
+function logout() { S.tok = null; try { sessionStorage.removeItem('detoxvs_admin'); } catch (e) { } render(); }
+
+/* ---- 화면 ---- */
+var NAV = [['home', '현황'], ['ask', '문의/제안'], ['report', '신고'], ['users', '사용자'], ['groups', '내기'], ['config', '공지·감지 설정']];
+function render() {
+  var app = $('#app');
+  if (!DEMO && !(CFG.supabaseUrl && CFG.anonKey)) { app.innerHTML = setupView(); return; }
+  if (!DEMO && !S.tok) { app.innerHTML = loginView(); return; }
+  var st = S.stats || {};
+  app.innerHTML = '<div class="wrap"><nav><div class="lg">디톡스vs<small>관리자</small></div>' + NAV.map(function (n) {
+    var c = n[0] === 'ask' ? st.feedback_new : n[0] === 'report' ? st.reports_new : 0;
+    return '<button class="' + (S.view === n[0] ? 'on' : '') + '" data-a="nav" data-v="' + n[0] + '"><span>' + n[1] + '</span>' + (c ? '<span class="cnt">' + c + '</span>' : '') + '</button>';
+  }).join('') + '<div class="sp"></div><div class="who">' + esc(DEMO ? '데모 데이터' : S.email) + '</div>' + (DEMO ? '' : '<button data-a="logout">로그아웃</button>') + '</nav><main id="main"></main></div>';
+  load();
+}
+function setupView() {
+  return '<div class="login"><div class="card"><h1>디톡스vs 관리자</h1><p class="sub" style="margin-top:6px">서버 연결 정보가 아직 없어요. Supabase 프로젝트의 주소와 anon key 를 넣으면 이 브라우저에 저장돼요. (web/config.js 에 넣어 두면 이 화면은 안 나와요)</p>' +
+    '<label>Supabase 주소</label><input class="inp" id="c_url" placeholder="https://xxxx.supabase.co"><label>anon key</label><input class="inp" id="c_key">' +
+    '<button class="btn" data-a="saveCfg">저장</button><p style="margin-top:14px;text-align:center"><a href="?demo">데모 데이터로 둘러보기</a></p></div></div>';
+}
+function loginView() {
+  return '<div class="login"><form class="card" id="lf"><h1>디톡스vs 관리자</h1><p class="sub" style="margin-top:6px">관리자로 등록된 계정만 들어올 수 있어요.</p>' +
+    '<label>이메일</label><input class="inp" id="l_email" type="email" autocomplete="username" required><label>비밀번호</label><input class="inp" id="l_pw" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">로그인</button><div class="err" id="l_err"></div></form></div>';
+}
+function head(title, right) { return (DEMO ? '<div class="demo">데모 데이터예요. 실제 서버와 연결돼 있지 않아요.</div>' : '') + '<div class="head"><h1>' + title + '</h1>' + (right || '') + '</div>'; }
+function setMain(h) { var m = $('#main'); if (m) m.innerHTML = h; }
+function fail(e) { setMain(head('문제가 생겼어요') + '<div class="card empty">' + esc(e.message || e) + '</div>'); }
+function load() {
+  var v = S.view;
+  if (v === 'home') rpc('admin_stats').then(function (s) { var first = !S.stats; S.stats = s; if (first && (s.feedback_new || s.reports_new)) { render(); return; } homeView(s); }).catch(fail);
+  else if (v === 'ask' || v === 'report') { S.fb.kind = v; fbLoad(); }
+  else if (v === 'users') usLoad();
+  else if (v === 'groups') grLoad();
+  else if (v === 'config') Promise.all([rpc('admin_notice_get'), rpc('admin_config_get')]).then(function (a) { cfgView(a[0], a[1]); }).catch(fail);
+}
+function stat(l, v, s, alert) { return '<div class="card stat' + (alert ? ' alert' : '') + '"><div class="l">' + l + '</div><div class="v">' + (v == null ? '–' : Number(v).toLocaleString('ko-KR')) + '</div><div class="s">' + (s || '&nbsp;') + '</div></div>'; }
+// 14일 막대: 한 지표에 한 차트(축을 섞지 않는다). 막대 위에 올리면 날짜와 값이 뜬다
+function bars(series, key, unit) {
+  var W = 560, H = 150, pad = 22, n = series.length, max = Math.max.apply(null, series.map(function (d) { return d[key]; }).concat([1])), bw = (W - 8) / n, h = '';
+  series.forEach(function (d, i) {
+    var v = d[key], bh = Math.max(v ? 3 : 0, (H - pad - 18) * v / max), x = 4 + i * bw, y = H - pad - bh, last = i === n - 1;
+    h += '<rect class="hit" x="' + x + '" y="0" width="' + bw + '" height="' + (H - pad) + '" data-t="' + day(d.day) + ' · ' + v + unit + '"></rect>' +
+      '<path class="bar" d="M' + (x + 2) + ' ' + (H - pad) + 'V' + (y + 4) + 'a4 4 0 0 1 4-4h' + Math.max(0, bw - 12) + 'a4 4 0 0 1 4 4V' + (H - pad) + 'z"' + (v ? '' : ' style="display:none"') + '></path>' +
+      (last ? '<text class="val" x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + v + '</text>' : '') +
+      (i % 2 === (n - 1) % 2 ? '<text x="' + (x + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle">' + day(d.day) + '</text>' : '');
+  });
+  return '<div class="chart"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="최근 14일 추이"><line x1="0" x2="' + W + '" y1="' + (H - pad) + '" y2="' + (H - pad) + '" stroke="#E6E9EE"></line>' + h + '</svg><div class="tip"></div></div>';
+}
+function homeView(s) {
+  setMain(head('현황', '<span class="sub">' + dt(s.now) + ' 기준</span><button class="btn sec sm" data-a="nav" data-v="home">새로고침</button>') +
+    '<div class="grid">' + stat('전체 사용자', s.users, '카카오 연결 ' + s.users_linked + '명') + stat('오늘 가입', s.new_today) + stat('오늘 이용', s.active_today, '측정값이 올라온 사람') + stat('최근 7일 이용', s.active_7d) +
+    stat('진행 중 내기', s.groups_active, '1:1 ' + s.duels_active + '개') + stat('오늘 만든 내기', s.groups_new_today) + stat('새 문의', s.feedback_new, '', s.feedback_new > 0) + stat('새 신고', s.reports_new, '', s.reports_new > 0) + stat('정지 중', s.banned) + '</div>' +
+    '<div class="two"><div class="card"><h2>하루 가입자</h2><div class="cap">최근 14일</div>' + bars(s.series, 'signups', '명') + '</div>' +
+    '<div class="card"><h2>하루 이용자</h2><div class="cap">최근 14일, 측정값이 올라온 사람 수</div>' + bars(s.series, 'active', '명') + '</div></div>');
+}
+function pager(st, total) {
+  return '<div class="pg"><span class="sub">' + (total ? (st.off + 1) + '–' + Math.min(total, st.off + PAGE) + ' / ' + total : '0') + '</span><button class="btn sec sm" data-a="pg" data-d="-1"' + (st.off ? '' : ' disabled') + '>이전</button><button class="btn sec sm" data-a="pg" data-d="1"' + (st.off + PAGE < total ? '' : ' disabled') + '>다음</button></div>';
+}
+function fbLoad() {
+  var f = S.fb;
+  rpc('admin_feedback', { p_kind: f.kind, p_status: f.status || null, p_limit: PAGE, p_offset: f.off }).then(function (r) {
+    var rep = f.kind === 'report';
+    setMain(head(rep ? '신고' : '문의/제안', '<div class="seg">' + [['new', '새 글'], ['done', '처리함'], ['', '전체']].map(function (o) { return '<button class="' + (f.status === o[0] ? 'on' : '') + '" data-a="fbStatus" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>') +
+      '<div class="card">' + (r.rows.length ? r.rows.map(function (x) {
+        return '<div class="fb"><div class="top"><b>' + esc(x.nickname || '탈퇴한 사용자') + '</b>' + (x.user_id ? '<button class="btn sec sm" data-a="user" data-id="' + x.user_id + '">내역</button>' : '') +
+          '<span class="pill ' + (x.status === 'new' ? 'w' : 'g') + '">' + (x.status === 'new' ? '새 글' : '처리함') + '</span><span class="sub">' + dt(x.created_at) + (x.device ? ' · ' + esc(x.device) : '') + (x.app_version ? ' · v' + esc(x.app_version) : '') + '</span></div>' +
+          '<div class="body">' + esc(x.body) + '</div>' +
+          (rep ? '<div class="tg">신고 대상 — ' + esc(x.target_label || '') + (x.target_user ? ' <button class="btn sec sm" data-a="user" data-id="' + x.target_user + '">대상 사용자 보기</button>' : '') + '</div>' : '') +
+          '<div class="act"><input class="inp note" placeholder="처리 메모(운영자만 봄)" value="' + esc(x.note || '') + '" data-note="' + x.id + '"><button class="btn sm ' + (x.status === 'new' ? '' : 'sec') + '" data-a="fbSet" data-id="' + x.id + '" data-v="' + (x.status === 'new' ? 'done' : 'new') + '">' + (x.status === 'new' ? '처리 완료' : '다시 열기') + '</button></div></div>';
+      }).join('') : '<div class="empty">' + (f.status === 'new' ? '새 글이 없어요.' : '글이 없어요.') + '</div>') + pager(f, r.total) + '</div>');
+  }).catch(fail);
+}
+function usLoad() {
+  var u = S.us;
+  rpc('admin_users', { p_q: u.q || null, p_sort: u.sort, p_limit: PAGE, p_offset: u.off }).then(function (r) {
+    S.usRows = r.rows;
+    function th(k, l) { return '<th class="s' + (u.sort === k ? ' on' : '') + '" data-a="usSort" data-v="' + k + '">' + l + (u.sort === k ? ' ↓' : '') + '</th>'; }
+    setMain(head('사용자') + '<div class="card"><form class="bar-tools" id="usf"><input class="inp" id="us_q" placeholder="닉네임 또는 사용자 ID" value="' + esc(u.q) + '" style="flex:1;max-width:320px"><button class="btn sec" type="submit">찾기</button></form>' +
+      '<div class="tw"><table><tr>' + th('name', '닉네임') + '<th>계정</th>' + th('new', '가입') + th('seen', '마지막 이용') + '<th>측정 권한</th>' + th('groups', '참가 내기') + '<th>상태</th></tr>' +
+      r.rows.map(function (x) {
+        return '<tr class="row" data-a="user" data-id="' + x.id + '"><td><b>' + esc(x.nickname) + '</b></td><td>' + (x.anonymous ? '<span class="pill">가입 없이</span>' : '<span class="pill b">' + esc(x.provider || '연결됨') + '</span>') + '</td><td class="n">' + dt(x.created_at) + '</td><td class="n">' + ago(x.last_sync) + '</td>' +
+          '<td>' + (x.usage_ok ? '<span class="pill g">사용기록</span> ' : '<span class="pill">사용기록 꺼짐</span> ') + (x.a11y_ok ? '<span class="pill g">정밀</span>' : '') + '</td><td class="n">' + x.n_groups + '</td><td>' + (x.banned ? '<span class="pill r">정지</span>' : '') + '</td></tr>';
+      }).join('') + '</table></div>' + (r.rows.length ? '' : '<div class="empty">찾는 사용자가 없어요.</div>') + pager(u, r.total) + '</div>');
+  }).catch(fail);
+}
+function grLoad() {
+  var g = S.gr;
+  rpc('admin_groups', { p_q: g.q || null, p_limit: PAGE, p_offset: g.off }).then(function (r) {
+    S.grRows = r.rows;
+    setMain(head('내기') + '<div class="card"><form class="bar-tools" id="grf"><input class="inp" id="gr_q" placeholder="내기 이름 또는 참가 코드" value="' + esc(g.q) + '" style="flex:1;max-width:320px"><button class="btn sec" type="submit">찾기</button></form>' +
+      '<div class="tw"><table><tr><th>이름</th><th>종류</th><th>방장</th><th>인원</th><th>측정</th><th>벌칙</th><th>만든 날</th><th>상태</th></tr>' +
+      r.rows.map(function (x) {
+        return '<tr class="row" data-a="group" data-id="' + x.id + '"><td><b>' + esc(x.name) + '</b></td><td>' + (x.kind === 'duel' ? '1:1' : '그룹') + '</td><td>' + esc(x.owner_nickname || '') + '</td><td class="n">' + x.n_members + '</td><td>' + (x.targets || []).map(function (t) { return TN[t] || t; }).join(', ') + '</td><td>' + esc(x.penalty || '') + '</td><td class="n">' + dt(x.created_at) + '</td>' +
+          '<td>' + (x.ended ? '<span class="pill">종료</span>' : x.status === 'pending' ? '<span class="pill w">수락 대기</span>' : '<span class="pill b">진행 중</span>') + '</td></tr>';
+      }).join('') + '</table></div>' + (r.rows.length ? '' : '<div class="empty">찾는 내기가 없어요.</div>') + pager(g, r.total) + '</div>');
+  }).catch(fail);
+}
+function cfgView(notice, det) {
+  setMain(head('공지·감지 설정') +
+    '<div class="card" style="margin-bottom:12px"><h2>앱 첫 화면 공지</h2><div class="cap">점검이나 업데이트 안내를 한 줄로 띄워요. 비우고 저장하면 공지가 사라져요. 사용자는 한 번 닫으면 같은 공지를 다시 보지 않아요.</div>' +
+    '<div class="bar-tools"><input class="inp" id="nt" maxlength="200" style="flex:1" placeholder="예: 오늘 밤 11시에 10분간 점검이 있어요" value="' + esc((notice && notice.text) || '') + '"><button class="btn" data-a="ntSave">저장</button></div></div>' +
+    '<div class="card"><h2>쇼츠·릴스 감지 설정</h2><div class="cap">유튜브·인스타그램이 화면 구조를 바꿔서 쇼츠/릴스 시간이 안 잡힐 때, 앱 업데이트 없이 여기서 화면 식별자를 고쳐요. 앱은 다음 반영(약 15분) 때 새 값을 받아요. 잘못 고치면 측정이 멈추니 바꾸기 전 값을 복사해 두세요.</div>' +
+    '<textarea class="inp mono" id="det" rows="16" spellcheck="false" style="color:var(--tx);font-size:13px">' + esc(JSON.stringify(det, null, 2)) + '</textarea><div class="bar-tools" style="margin-top:10px"><button class="btn" data-a="detSave">저장</button><span class="sub">형식: { "대상": { "pkgs": [앱 패키지], "ids": [화면 식별자] } }</span></div></div>');
+}
+
+/* ---- 옆 패널 ---- */
+function openDr(h) { $('#drIn').innerHTML = h; $('#dr').classList.add('on'); }
+function closeDr() { $('#dr').classList.remove('on'); }
+function userDr(id) {
+  var u = (S.usRows || []).filter(function (x) { return x.id === id; })[0];
+  openDr('<div class="empty">불러오는 중…</div>');
+  var need = u ? Promise.resolve(u) : rpc('admin_users', { p_q: id, p_sort: 'new', p_limit: 1, p_offset: 0 }).then(function (r) { return r.rows[0]; });
+  Promise.all([need, rpc('admin_user', { p_id: id })]).then(function (a) {
+    var x = a[0], d = a[1]; if (!x) { openDr('<h2>없는 사용자예요</h2><p class="sub">이미 탈퇴했을 수 있어요.</p><button class="btn sec" data-a="closeDr">닫기</button>'); return; }
+    var max = Math.max.apply(null, d.days.map(function (v) { return v.seconds; }).concat([60]));
+    openDr('<div class="head" style="margin-bottom:10px"><h2 style="flex:1">' + esc(x.nickname) + '</h2><button class="btn sec sm" data-a="closeDr">닫기</button></div><div class="mono">' + esc(x.id) + '</div>' +
+      '<div style="margin-top:12px"><div class="kv"><span>계정</span><b>' + (x.anonymous ? '가입 없이 시작' : esc(x.provider || '연결됨') + (x.email ? ' · ' + esc(x.email) : '')) + '</b></div><div class="kv"><span>가입</span><b>' + dt(x.created_at) + '</b></div><div class="kv"><span>마지막 이용</span><b>' + ago(x.last_sync) + '</b></div><div class="kv"><span>앱 버전</span><b>' + esc(x.app_version || '–') + '</b></div>' +
+      '<div class="kv"><span>측정 권한</span><b>' + (x.usage_ok ? '사용기록 켜짐' : '사용기록 꺼짐') + ' · ' + (x.a11y_ok ? '정밀 켜짐' : '정밀 꺼짐') + '</b></div>' +
+      '<div class="kv"><span>상태</span><b>' + (x.banned ? '<span class="pill r">정지 ' + (x.banned_until === 'infinity' ? '무기한' : dt(x.banned_until) + '까지') + '</span>' : '정상') + '</b></div>' + (x.banned && x.ban_reason ? '<div class="kv"><span>정지 사유</span><b>' + esc(x.ban_reason) + '</b></div>' : '') + '</div>' +
+      '<div class="sec"><h3>최근 7일 사용 시간 (재는 앱 전체 합)</h3><div class="days">' + d.days.map(function (v) { return '<div title="' + fmtSec(v.seconds) + '"><i style="height:' + (v.seconds / max * 60) + 'px"></i>' + day(v.day) + '</div>'; }).join('') + '</div></div>' +
+      '<div class="sec"><h3>참가한 내기 ' + d.groups.length + '개</h3>' + (d.groups.length ? d.groups.map(function (g) { return '<div class="kv"><span>' + esc(g.name) + ' <span class="sub">' + (g.kind === 'duel' ? '1:1' : '그룹') + (g.role === 'owner' ? ' · 방장' : '') + '</span></span><b>' + (g.status !== 'active' ? (g.status === 'kicked' ? '내보내짐' : '나감') : g.ended ? '종료' : '참가 중') + '</b></div>'; }).join('') : '<div class="sub">없어요.</div>') + '</div>' +
+      '<div class="sec"><h3>보낸 문의·신고 ' + d.feedback.length + '건</h3>' + (d.feedback.length ? d.feedback.slice(0, 5).map(function (f) { return '<div class="kv"><span style="color:var(--tx)">' + esc(f.body.slice(0, 60)) + '</span><b class="sub">' + day(f.created_at) + '</b></div>'; }).join('') : '<div class="sub">없어요.</div>') + '</div>' +
+      '<div class="sec"><h3>이용 정지</h3>' + (x.banned ? '<button class="btn sec" data-a="unban" data-id="' + x.id + '">정지 풀기</button>' :
+        '<div class="bar-tools"><select class="inp" id="ban_days"><option value="1">1일</option><option value="7" selected>7일</option><option value="30">30일</option><option value="">무기한</option></select><input class="inp" id="ban_reason" placeholder="사유(사용자에게는 안 보임)" style="flex:1"></div><button class="btn bad" data-a="ban" data-id="' + x.id + '">정지하기</button><div class="sub" style="margin-top:6px">정지되면 앱을 열어도 정지 안내만 보여요. 문의는 보낼 수 있어요.</div>') + '</div>' +
+      '<div class="sec"><h3>탈퇴 처리</h3><button class="btn sec" style="color:var(--red)" data-a="delUser" data-id="' + x.id + '" data-n="' + esc(x.nickname) + '">계정과 기록 지우기</button><div class="sub" style="margin-top:6px">본인이 탈퇴를 요청했을 때 써요. 되돌릴 수 없어요.</div></div>');
+  }).catch(function (e) { openDr('<h2>불러오지 못했어요</h2><p class="sub">' + esc(e.message) + '</p><button class="btn sec" data-a="closeDr">닫기</button>'); });
+}
+function groupDr(id) {
+  var g = (S.grRows || []).filter(function (x) { return x.id === id; })[0]; if (!g) return;
+  openDr('<div class="empty">불러오는 중…</div>');
+  rpc('admin_group_members', { p_id: id }).then(function (ms) {
+    openDr('<div class="head" style="margin-bottom:10px"><h2 style="flex:1">' + esc(g.name) + '</h2><button class="btn sec sm" data-a="closeDr">닫기</button></div><div class="mono">' + esc(g.id) + '</div>' +
+      '<div style="margin-top:12px"><div class="kv"><span>종류</span><b>' + (g.kind === 'duel' ? '1:1' : '그룹') + '</b></div><div class="kv"><span>참가 코드</span><b>' + esc(g.invite_code) + '</b></div><div class="kv"><span>측정</span><b>' + (g.targets || []).map(function (t) { return TN[t] || t; }).join(', ') + '</b></div>' +
+      '<div class="kv"><span>벌칙</span><b>' + esc(g.penalty || '없음') + '</b></div><div class="kv"><span>기간</span><b>' + (g.duration_days ? g.duration_days + '일' : '무기한') + '</b></div><div class="kv"><span>시작</span><b>' + dt(g.start_at) + '</b></div><div class="kv"><span>끝</span><b>' + (g.end_at ? dt(g.end_at) : '–') + '</b></div></div>' +
+      '<div class="sec"><h3>참가자 ' + ms.length + '명</h3>' + ms.map(function (m) { return '<div class="kv"><span style="color:var(--tx)"><b>' + esc(m.nickname) + '</b> <span class="sub">' + (m.role === 'owner' ? '방장' : '') + (m.status !== 'active' ? ' ' + (m.status === 'kicked' ? '내보내짐' : '나감') : '') + '</span></span><button class="btn sec sm" data-a="user" data-id="' + m.user_id + '">내역</button></div>'; }).join('') + '</div>' +
+      '<div class="sec"><h3>내기 지우기</h3><button class="btn sec" style="color:var(--red)" data-a="delGroup" data-id="' + g.id + '" data-n="' + esc(g.name) + '">이 내기 지우기</button><div class="sub" style="margin-top:6px">약관에 어긋나는 내기 이름·벌칙일 때 써요. 참가자 모두에게서 사라지고 되돌릴 수 없어요.</div></div>');
+  }).catch(function (e) { toast(e.message); closeDr(); });
+}
+
+/* ---- 눌렀을 때 ---- */
+var ACT = {
+  nav: function (d) { S.view = d.v; render(); },
+  logout: logout,
+  saveCfg: function () { var u = $('#c_url').value.trim().replace(/\/+$/, ''), k = $('#c_key').value.trim(); if (!/^https:\/\//.test(u) || k.length < 20) { toast('주소와 키를 확인해 주세요'); return; } CFG = { supabaseUrl: u, anonKey: k }; localStorage.setItem('detoxvs_admin_cfg', JSON.stringify(CFG)); render(); },
+  pg: function (d) { var st = S.view === 'users' ? S.us : S.view === 'groups' ? S.gr : S.fb; st.off = Math.max(0, st.off + (+d.d) * PAGE); load(); },
+  fbStatus: function (d) { S.fb.status = d.v; S.fb.off = 0; fbLoad(); },
+  fbSet: function (d) { var n = document.querySelector('[data-note="' + d.id + '"]'); rpc('admin_feedback_set', { p_id: d.id, p_status: d.v, p_note: n ? n.value : null }).then(function () { toast(d.v === 'done' ? '처리 완료로 옮겼어요' : '다시 열었어요'); return rpc('admin_stats'); }).then(function (s) { S.stats = s; render(); }).catch(function (e) { toast(e.message); }); },
+  usSort: function (d) { S.us.sort = d.v; S.us.off = 0; usLoad(); },
+  user: function (d) { userDr(d.id); },
+  group: function (d) { groupDr(d.id); },
+  closeDr: closeDr,
+  ban: function (d) { var days = $('#ban_days').value; rpc('admin_ban', { p_id: d.id, p_days: days ? +days : null, p_reason: $('#ban_reason').value }).then(function () { toast('정지했어요'); S.usRows = null; userDr(d.id); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
+  unban: function (d) { rpc('admin_unban', { p_id: d.id }).then(function () { toast('정지를 풀었어요'); S.usRows = null; userDr(d.id); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
+  delUser: function (d) { if (!confirm(d.n + ' 계정과 모든 기록을 지울까요? 되돌릴 수 없어요.')) return; rpc('admin_delete_user', { p_id: d.id }).then(function () { toast('지웠어요'); closeDr(); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
+  delGroup: function (d) { if (!confirm("'" + d.n + "' 내기를 지울까요? 되돌릴 수 없어요.")) return; rpc('admin_group_delete', { p_id: d.id }).then(function () { toast('지웠어요'); closeDr(); grLoad(); }).catch(function (e) { toast(e.message); }); },
+  ntSave: function () { rpc('admin_notice_set', { p_text: $('#nt').value }).then(function () { toast($('#nt').value.trim() ? '공지를 올렸어요' : '공지를 내렸어요'); }).catch(function (e) { toast(e.message); }); },
+  detSave: function () { var v; try { v = JSON.parse($('#det').value); } catch (e) { toast('JSON 형식이 올바르지 않아요'); return; } if (!confirm('감지 설정을 바꿀까요? 모든 사용자에게 적용돼요.')) return; rpc('admin_config_set', { p_value: v }).then(function () { toast('저장했어요'); }).catch(function (e) { toast(e.message); }); }
+};
+document.addEventListener('click', function (ev) {
+  if (ev.target === $('#dr')) { closeDr(); return; }
+  var el = ev.target; while (el && el !== document.body && !(el.dataset && el.dataset.a)) el = el.parentNode;
+  if (!el || !el.dataset || !el.dataset.a || el.disabled) return;
+  if (ev.target.closest && ev.target.closest('input,textarea,select') ) return;
+  var f = ACT[el.dataset.a]; if (f) { ev.preventDefault(); f(el.dataset, el); }
+});
+document.addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  if (ev.target.id === 'lf') { var b = ev.target.querySelector('button'); b.disabled = true; $('#l_err').textContent = ''; login($('#l_email').value.trim(), $('#l_pw').value).then(function () { render(); }).catch(function (e) { b.disabled = false; $('#l_err').textContent = e.message; }); }
+  else if (ev.target.id === 'usf') { S.us.q = $('#us_q').value.trim(); S.us.off = 0; usLoad(); }
+  else if (ev.target.id === 'grf') { S.gr.q = $('#gr_q').value.trim(); S.gr.off = 0; grLoad(); }
+});
+document.addEventListener('mousemove', function (ev) {
+  var t = ev.target, tips = document.querySelectorAll('.tip'); for (var i = 0; i < tips.length; i++) tips[i].style.display = 'none';
+  if (!t.classList || !t.classList.contains('hit')) return;
+  var ch = t.closest('.chart'), tip = ch.querySelector('.tip'), r = ch.getBoundingClientRect(), b = t.getBoundingClientRect();
+  tip.textContent = t.dataset.t; tip.style.left = (b.left + b.width / 2 - r.left) + 'px'; tip.style.top = '8px'; tip.style.display = 'block';
+});
+document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeDr(); });
+
+/* ---- 데모 데이터(?demo) ---- */
+var demo = (function () {
+  var now = Date.now(), D = 864e5, names = ['태오', '지은', '현우', '도윤', '서연', '유나', '준호', '시우', '채원', '민서', '하준', '예린', '건우', '소율'];
+  function rnd(i) { var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+  var users = names.map(function (n, i) { return { id: '0000000' + i + '-demo', nickname: n, created_at: new Date(now - (i * 1.7 + 0.2) * D).toISOString(), banned: i === 9, banned_until: i === 9 ? new Date(now + 5 * D).toISOString() : null, ban_reason: i === 9 ? '부적절한 내기 이름' : null, anonymous: i % 3 === 1, provider: i % 3 === 1 ? '' : 'kakao', email: '', last_sync: i === 11 ? null : new Date(now - rnd(i) * 30 * 36e5).toISOString(), app_version: '1.0.0', usage_ok: i !== 11, a11y_ok: i % 4 !== 2, n_groups: Math.floor(rnd(i + 3) * 4) }; });
+  var groups = [['쇼츠 끊기 대결', 'duel', 2, '진 사람이 커피 사기', ['yt_shorts', 'ig_reels']], ['우리 가족 디톡스', 'party', 14, '꼴찌가 주말 설거지', ['youtube', 'instagram']], ['릴스 참기 한 판', 'duel', 2, '', ['ig_reels']], ['회사 3팀 게임 금지', 'party', 7, '1등에게 점심', ['games']], ['틱톡 줄이기', 'duel', 1, '', ['tiktok']]].map(function (g, i) {
+    return { id: 'g' + i + '-demo', name: g[0], kind: g[1], status: i === 4 ? 'pending' : 'active', invite_code: ['K7QM2X', 'P3WD9A', 'R8TN4C', 'M2HV6B', 'Z5JX3D'][i], targets: g[4], penalty: g[3], baseline_min: 120, duration_days: i === 1 ? null : 7, start_at: new Date(now - (i + 2) * D).toISOString(), end_at: i === 2 ? new Date(now - D).toISOString() : i === 1 ? null : new Date(now + (5 - i) * D).toISOString(), created_at: new Date(now - (i + 2) * D).toISOString(), ended: i === 2, owner_nickname: names[i], n_members: g[2] };
+  });
+  var fb = [
+    { kind: 'ask', nickname: '지은', user_id: users[1].id, body: '릴스 시간이 실제보다 적게 나오는 것 같아요. 인스타 업데이트한 뒤부터 그래요.', device: 'SM-S921N / Android 15', app_version: '1.0.0', status: 'new' },
+    { kind: 'ask', nickname: '현우', user_id: users[2].id, body: '주간 결과를 카톡으로 공유하는 기능이 있으면 좋겠어요!', device: 'SM-A546S / Android 14', app_version: '1.0.0', status: 'new' },
+    { kind: 'ask', nickname: '서연', user_id: users[4].id, body: '알림이 15분쯤 늦게 와요.', device: 'Pixel 8 / Android 16', app_version: '1.0.0', status: 'done', note: '푸시 붙이면 해결 예정' },
+    { kind: 'report', nickname: '도윤', user_id: users[3].id, body: '벌칙에 돈을 걸자고 적어 놨어요.', device: '', app_version: '', status: 'new', target_user: users[9].id, target_group: 'g3-demo', target_label: '사용자: 민서 / 내기: 회사 3팀 게임 금지 (벌칙: 1등에게 점심)' }
+  ].map(function (x, i) { x.id = 'f' + i; x.created_at = new Date(now - (i * 7 + 1) * 36e5).toISOString(); x.note = x.note || ''; return x; });
+  var notice = { text: '' }, det = { yt_shorts: { pkgs: ['com.google.android.youtube'], ids: ['reel_recycler', 'reel_player_page_container', 'reel_watch_fragment_root', 'reel_watch_player'] }, ig_reels: { pkgs: ['com.instagram.android'], ids: ['clips_viewer_view_pager', 'clips_video_container', 'clips_viewer_container'] } };
+  function page(rows, a) { return { total: rows.length, rows: rows.slice(a.p_offset || 0, (a.p_offset || 0) + (a.p_limit || 50)) }; }
+  return {
+    admin_me: function () { return true; },
+    admin_stats: function () {
+      var t0 = Math.floor((now + 9 * 36e5) / D) * D - 9 * 36e5, series = [];
+      for (var i = 13; i >= 0; i--) series.push({ day: new Date(t0 - i * D).toISOString(), signups: Math.round(2 + rnd(i) * 9 + (13 - i) * 0.5), active: Math.round(30 + (13 - i) * 6 + rnd(i + 5) * 18) });
+      return { users: 1284, users_linked: 861, new_today: series[13].signups, active_today: series[13].active, active_7d: 412, groups_active: 96, duels_active: 71, groups_new_today: 8, feedback_new: fb.filter(function (x) { return x.kind === 'ask' && x.status === 'new'; }).length, reports_new: fb.filter(function (x) { return x.kind === 'report' && x.status === 'new'; }).length, banned: 1, series: series, now: new Date().toISOString() };
+    },
+    admin_feedback: function (a) { return page(fb.filter(function (x) { return x.kind === a.p_kind && (!a.p_status || x.status === a.p_status); }), a); },
+    admin_feedback_set: function (a) { var x = fb.filter(function (f) { return f.id === a.p_id; })[0]; x.status = a.p_status; if (a.p_note != null) x.note = a.p_note; return null; },
+    admin_users: function (a) {
+      var q = (a.p_q || '').toLowerCase(), rows = users.filter(function (u) { return !q || u.nickname.toLowerCase().indexOf(q) >= 0 || u.id === q; });
+      rows.sort(function (x, y) { return a.p_sort === 'name' ? x.nickname.localeCompare(y.nickname, 'ko') : a.p_sort === 'groups' ? y.n_groups - x.n_groups : a.p_sort === 'seen' ? (Date.parse(y.last_sync || 0) || 0) - (Date.parse(x.last_sync || 0) || 0) : Date.parse(y.created_at) - Date.parse(x.created_at); });
+      return page(rows, a);
+    },
+    admin_user: function (a) {
+      var t0 = Math.floor((now + 9 * 36e5) / D) * D - 9 * 36e5, days = [], k = users.map(function (u) { return u.id; }).indexOf(a.p_id);
+      for (var i = 6; i >= 0; i--) days.push({ day: new Date(t0 - i * D).toISOString(), seconds: Math.round(1800 + rnd(i + k * 3) * 7200) });
+      return { days: days, groups: groups.slice(0, 1 + k % 3).map(function (g, i) { return { id: g.id, name: g.name, kind: g.kind, role: i ? 'member' : 'owner', status: 'active', ended: g.ended }; }), feedback: fb.filter(function (f) { return f.user_id === a.p_id; }) };
+    },
+    admin_ban: function (a) { var u = users.filter(function (x) { return x.id === a.p_id; })[0]; u.banned = true; u.banned_until = a.p_days ? new Date(now + a.p_days * D).toISOString() : 'infinity'; u.ban_reason = a.p_reason; return null; },
+    admin_unban: function (a) { var u = users.filter(function (x) { return x.id === a.p_id; })[0]; u.banned = false; u.banned_until = null; return null; },
+    admin_delete_user: function (a) { users = users.filter(function (x) { return x.id !== a.p_id; }); return null; },
+    admin_groups: function (a) { var q = (a.p_q || '').toLowerCase(); return page(groups.filter(function (g) { return !q || g.name.toLowerCase().indexOf(q) >= 0 || g.invite_code.toLowerCase() === q; }), a); },
+    admin_group_members: function (a) { var g = groups.filter(function (x) { return x.id === a.p_id; })[0]; return users.slice(0, Math.min(g.n_members, 6)).map(function (u, i) { return { user_id: u.id, nickname: u.nickname, role: i ? 'member' : 'owner', status: 'active' }; }); },
+    admin_group_delete: function (a) { groups = groups.filter(function (x) { return x.id !== a.p_id; }); return null; },
+    admin_notice_get: function () { return notice; }, admin_notice_set: function (a) { notice = { text: a.p_text }; return null; },
+    admin_config_get: function () { return det; }, admin_config_set: function (a) { det = a.p_value; return null; }
+  };
+})();
+render();
+})();
+</script>
+</body>
+</html>
