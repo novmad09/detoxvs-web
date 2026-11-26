@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>디톡스vs 내기 초대</title>
+<meta property="og:title" content="디톡스vs 내기에 초대받았어요">
+<meta property="og:description" content="누가 덜 봤나, 내기 한 판. 눌러서 바로 참가하세요.">
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F2F4F6;color:#18212F;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;padding:20px;box-sizing:border-box}
+.c{width:min(380px,100%);background:#fff;border-radius:22px;padding:30px 24px;text-align:center;box-shadow:0 8px 30px rgba(20,40,90,.08)}
+.lg{font-size:34px;font-weight:800;color:#2557E6;letter-spacing:-1px}
+p{color:#4A5567;margin:8px 0 0}
+.code{font-size:30px;font-weight:800;letter-spacing:8px;margin:22px 0 6px;padding-left:8px}
+a.b{display:block;height:54px;line-height:54px;border-radius:16px;background:#2557E6;color:#fff;font-weight:700;text-decoration:none;margin-top:18px}
+a.s{display:block;margin-top:14px;color:#4A5567;font-size:14px}
+.sub{font-size:13.5px;color:#8D97A8}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="lg">디톡스vs</div>
+  <p id="msg">내기에 초대받았어요</p>
+  <div class="code" id="code"></div>
+  <div class="sub" id="hint">참가 코드</div>
+  <a class="b" id="open" href="#">디톡스vs에서 열기</a>
+  <a class="s" id="store" href="https://play.google.com/store/apps/details?id=com.weekend.detoxvs">앱이 아직 없다면 여기서 받기</a>
+</div>
+<script>
+(function () {
+  // 주소의 ?c=참가코드 를 읽어 앱(detoxvs://join?code=)으로 넘긴다. 앱이 열리면 참가 코드가 자동으로 들어간다
+  var m = /[?&]c=([A-Za-z0-9]{6})(?:&|$)/.exec(location.search), code = m ? m[1].toUpperCase() : '';
+  var open = document.getElementById('open');
+  if (!code) { document.getElementById('msg').textContent = '초대 주소가 올바르지 않아요'; document.getElementById('hint').textContent = '보낸 사람에게 참가 코드를 다시 받아 주세요'; open.style.display = 'none'; return; }
+  document.getElementById('code').textContent = code;
+  var store = 'https://play.google.com/store/apps/details?id=com.weekend.detoxvs';
+  var isAndroid = /Android/i.test(navigator.userAgent);
+  // 안드로이드는 intent 주소를 쓰면 앱이 없을 때 스토어로 넘어간다
+  var url = isAndroid ? 'intent://join?code=' + code + '#Intent;scheme=detoxvs;package=com.weekend.detoxvs;S.browser_fallback_url=' + encodeURIComponent(store) + ';end' : 'detoxvs://join?code=' + code;
+  open.href = url;
+  if (!isAndroid) { document.getElementById('hint').textContent = '디톡스vs는 안드로이드 폰에서만 쓸 수 있어요'; open.style.display = 'none'; return; }
+  setTimeout(function () { location.href = url; }, 250);
+})();
+</script>
+</body>
+</html>
