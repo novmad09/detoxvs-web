@@ -144,7 +144,7 @@ function login(email, pw) {
 function logout() { S.tok = null; try { sessionStorage.removeItem('detoxvs_admin'); } catch (e) { } render(); }
 
 /* ---- 화면 ---- */
-var NAV = [['home', '현황'], ['ask', '문의/제안'], ['report', '신고'], ['users', '사용자'], ['groups', '내기'], ['config', '공지·감지 설정']];
+var NAV = [['home', '현황'], ['ask', '문의/제안'], ['report', '신고'], ['users', '사용자'], ['groups', '대결'], ['config', '공지·감지 설정']];
 function render() {
   var app = $('#app');
   if (!DEMO && !(CFG.supabaseUrl && CFG.anonKey)) { app.innerHTML = setupView(); return; }
@@ -193,7 +193,7 @@ function bars(series, key, unit) {
 function homeView(s) {
   setMain(head('현황', '<span class="sub">' + dt(s.now) + ' 기준</span><button class="btn sec sm" data-a="nav" data-v="home">새로고침</button>') +
     '<div class="grid">' + stat('전체 사용자', s.users, '카카오 연결 ' + s.users_linked + '명') + stat('오늘 가입', s.new_today) + stat('오늘 이용', s.active_today, '측정값이 올라온 사람') + stat('최근 7일 이용', s.active_7d) +
-    stat('진행 중 내기', s.groups_active, '1:1 ' + s.duels_active + '개') + stat('오늘 만든 내기', s.groups_new_today) + stat('새 문의', s.feedback_new, '', s.feedback_new > 0) + stat('새 신고', s.reports_new, '', s.reports_new > 0) + stat('정지 중', s.banned) + '</div>' +
+    stat('진행 중 대결', s.groups_active, '1:1 ' + s.duels_active + '개') + stat('오늘 만든 대결', s.groups_new_today) + stat('새 문의', s.feedback_new, '', s.feedback_new > 0) + stat('새 신고', s.reports_new, '', s.reports_new > 0) + stat('정지 중', s.banned) + '</div>' +
     '<div class="two"><div class="card"><h2>하루 가입자</h2><div class="cap">최근 14일</div>' + bars(s.series, 'signups', '명') + '</div>' +
     '<div class="card"><h2>하루 이용자</h2><div class="cap">최근 14일, 측정값이 올라온 사람 수</div>' + bars(s.series, 'active', '명') + '</div></div>');
 }
@@ -220,7 +220,7 @@ function usLoad() {
     S.usRows = r.rows;
     function th(k, l) { return '<th class="s' + (u.sort === k ? ' on' : '') + '" data-a="usSort" data-v="' + k + '">' + l + (u.sort === k ? ' ↓' : '') + '</th>'; }
     setMain(head('사용자') + '<div class="card"><form class="bar-tools" id="usf"><input class="inp" id="us_q" placeholder="닉네임 또는 사용자 ID" value="' + esc(u.q) + '" style="flex:1;max-width:320px"><button class="btn sec" type="submit">찾기</button></form>' +
-      '<div class="tw"><table><tr>' + th('name', '닉네임') + '<th>계정</th>' + th('new', '가입') + th('seen', '마지막 이용') + '<th>측정 권한</th>' + th('groups', '참가 내기') + '<th>상태</th></tr>' +
+      '<div class="tw"><table><tr>' + th('name', '닉네임') + '<th>계정</th>' + th('new', '가입') + th('seen', '마지막 이용') + '<th>측정 권한</th>' + th('groups', '참가 대결') + '<th>상태</th></tr>' +
       r.rows.map(function (x) {
         return '<tr class="row" data-a="user" data-id="' + x.id + '"><td><b>' + esc(x.nickname) + '</b></td><td>' + (x.anonymous ? '<span class="pill">가입 없이</span>' : '<span class="pill b">' + esc(x.provider || '연결됨') + '</span>') + '</td><td class="n">' + dt(x.created_at) + '</td><td class="n">' + ago(x.last_sync) + '</td>' +
           '<td>' + (x.usage_ok ? '<span class="pill g">사용기록</span> ' : '<span class="pill">사용기록 꺼짐</span> ') + (x.a11y_ok ? '<span class="pill g">정밀</span>' : '') + '</td><td class="n">' + x.n_groups + '</td><td>' + (x.banned ? '<span class="pill r">정지</span>' : '') + '</td></tr>';
@@ -231,12 +231,12 @@ function grLoad() {
   var g = S.gr;
   rpc('admin_groups', { p_q: g.q || null, p_limit: PAGE, p_offset: g.off }).then(function (r) {
     S.grRows = r.rows;
-    setMain(head('내기') + '<div class="card"><form class="bar-tools" id="grf"><input class="inp" id="gr_q" placeholder="내기 이름 또는 참가 코드" value="' + esc(g.q) + '" style="flex:1;max-width:320px"><button class="btn sec" type="submit">찾기</button></form>' +
+    setMain(head('대결') + '<div class="card"><form class="bar-tools" id="grf"><input class="inp" id="gr_q" placeholder="대결 이름 또는 참가 코드" value="' + esc(g.q) + '" style="flex:1;max-width:320px"><button class="btn sec" type="submit">찾기</button></form>' +
       '<div class="tw"><table><tr><th>이름</th><th>종류</th><th>방장</th><th>인원</th><th>측정</th><th>벌칙</th><th>만든 날</th><th>상태</th></tr>' +
       r.rows.map(function (x) {
         return '<tr class="row" data-a="group" data-id="' + x.id + '"><td><b>' + esc(x.name) + '</b></td><td>' + (x.kind === 'duel' ? '1:1' : '그룹') + '</td><td>' + esc(x.owner_nickname || '') + '</td><td class="n">' + x.n_members + '</td><td>' + (x.targets || []).map(function (t) { return TN[t] || t; }).join(', ') + '</td><td>' + esc(x.penalty || '') + '</td><td class="n">' + dt(x.created_at) + '</td>' +
           '<td>' + (x.ended ? '<span class="pill">종료</span>' : x.status === 'pending' ? '<span class="pill w">수락 대기</span>' : '<span class="pill b">진행 중</span>') + '</td></tr>';
-      }).join('') + '</table></div>' + (r.rows.length ? '' : '<div class="empty">찾는 내기가 없어요.</div>') + pager(g, r.total) + '</div>');
+      }).join('') + '</table></div>' + (r.rows.length ? '' : '<div class="empty">찾는 대결이 없어요.</div>') + pager(g, r.total) + '</div>');
   }).catch(fail);
 }
 function cfgView(notice, det) {
@@ -262,7 +262,7 @@ function userDr(id) {
       '<div class="kv"><span>측정 권한</span><b>' + (x.usage_ok ? '사용기록 켜짐' : '사용기록 꺼짐') + ' · ' + (x.a11y_ok ? '정밀 켜짐' : '정밀 꺼짐') + '</b></div>' +
       '<div class="kv"><span>상태</span><b>' + (x.banned ? '<span class="pill r">정지 ' + (x.banned_until === 'infinity' ? '무기한' : dt(x.banned_until) + '까지') + '</span>' : '정상') + '</b></div>' + (x.banned && x.ban_reason ? '<div class="kv"><span>정지 사유</span><b>' + esc(x.ban_reason) + '</b></div>' : '') + '</div>' +
       '<div class="sec"><h3>최근 7일 사용 시간 (재는 앱 전체 합)</h3><div class="days">' + d.days.map(function (v) { return '<div title="' + fmtSec(v.seconds) + '"><i style="height:' + (v.seconds / max * 60) + 'px"></i>' + day(v.day) + '</div>'; }).join('') + '</div></div>' +
-      '<div class="sec"><h3>참가한 내기 ' + d.groups.length + '개</h3>' + (d.groups.length ? d.groups.map(function (g) { return '<div class="kv"><span>' + esc(g.name) + ' <span class="sub">' + (g.kind === 'duel' ? '1:1' : '그룹') + (g.role === 'owner' ? ' · 방장' : '') + '</span></span><b>' + (g.status !== 'active' ? (g.status === 'kicked' ? '내보내짐' : '나감') : g.ended ? '종료' : '참가 중') + '</b></div>'; }).join('') : '<div class="sub">없어요.</div>') + '</div>' +
+      '<div class="sec"><h3>참가한 대결 ' + d.groups.length + '개</h3>' + (d.groups.length ? d.groups.map(function (g) { return '<div class="kv"><span>' + esc(g.name) + ' <span class="sub">' + (g.kind === 'duel' ? '1:1' : '그룹') + (g.role === 'owner' ? ' · 방장' : '') + '</span></span><b>' + (g.status !== 'active' ? (g.status === 'kicked' ? '내보내짐' : '나감') : g.ended ? '종료' : '참가 중') + '</b></div>'; }).join('') : '<div class="sub">없어요.</div>') + '</div>' +
       '<div class="sec"><h3>보낸 문의·신고 ' + d.feedback.length + '건</h3>' + (d.feedback.length ? d.feedback.slice(0, 5).map(function (f) { return '<div class="kv"><span style="color:var(--tx)">' + esc(f.body.slice(0, 60)) + '</span><b class="sub">' + day(f.created_at) + '</b></div>'; }).join('') : '<div class="sub">없어요.</div>') + '</div>' +
       '<div class="sec"><h3>이용 정지</h3>' + (x.banned ? '<button class="btn sec" data-a="unban" data-id="' + x.id + '">정지 풀기</button>' :
         '<div class="bar-tools"><select class="inp" id="ban_days"><option value="1">1일</option><option value="7" selected>7일</option><option value="30">30일</option><option value="">무기한</option></select><input class="inp" id="ban_reason" placeholder="사유(사용자에게는 안 보임)" style="flex:1"></div><button class="btn bad" data-a="ban" data-id="' + x.id + '">정지하기</button><div class="sub" style="margin-top:6px">정지되면 앱을 열어도 정지 안내만 보여요. 문의는 보낼 수 있어요.</div>') + '</div>' +
@@ -277,7 +277,7 @@ function groupDr(id) {
       '<div style="margin-top:12px"><div class="kv"><span>종류</span><b>' + (g.kind === 'duel' ? '1:1' : '그룹') + '</b></div><div class="kv"><span>참가 코드</span><b>' + esc(g.invite_code) + '</b></div><div class="kv"><span>측정</span><b>' + (g.targets || []).map(function (t) { return TN[t] || t; }).join(', ') + '</b></div>' +
       '<div class="kv"><span>벌칙</span><b>' + esc(g.penalty || '없음') + '</b></div><div class="kv"><span>기간</span><b>' + (g.duration_days ? g.duration_days + '일' : '무기한') + '</b></div><div class="kv"><span>시작</span><b>' + dt(g.start_at) + '</b></div><div class="kv"><span>끝</span><b>' + (g.end_at ? dt(g.end_at) : '–') + '</b></div></div>' +
       '<div class="sec"><h3>참가자 ' + ms.length + '명</h3>' + ms.map(function (m) { return '<div class="kv"><span style="color:var(--tx)"><b>' + esc(m.nickname) + '</b> <span class="sub">' + (m.role === 'owner' ? '방장' : '') + (m.status !== 'active' ? ' ' + (m.status === 'kicked' ? '내보내짐' : '나감') : '') + '</span></span><button class="btn sec sm" data-a="user" data-id="' + m.user_id + '">내역</button></div>'; }).join('') + '</div>' +
-      '<div class="sec"><h3>내기 지우기</h3><button class="btn sec" style="color:var(--red)" data-a="delGroup" data-id="' + g.id + '" data-n="' + esc(g.name) + '">이 내기 지우기</button><div class="sub" style="margin-top:6px">약관에 어긋나는 내기 이름·벌칙일 때 써요. 참가자 모두에게서 사라지고 되돌릴 수 없어요.</div></div>');
+      '<div class="sec"><h3>대결 지우기</h3><button class="btn sec" style="color:var(--red)" data-a="delGroup" data-id="' + g.id + '" data-n="' + esc(g.name) + '">이 대결 지우기</button><div class="sub" style="margin-top:6px">약관에 어긋나는 대결 이름·벌칙일 때 써요. 참가자 모두에게서 사라지고 되돌릴 수 없어요.</div></div>');
   }).catch(function (e) { toast(e.message); closeDr(); });
 }
 
@@ -296,7 +296,7 @@ var ACT = {
   ban: function (d) { var days = $('#ban_days').value; rpc('admin_ban', { p_id: d.id, p_days: days ? +days : null, p_reason: $('#ban_reason').value }).then(function () { toast('정지했어요'); S.usRows = null; userDr(d.id); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
   unban: function (d) { rpc('admin_unban', { p_id: d.id }).then(function () { toast('정지를 풀었어요'); S.usRows = null; userDr(d.id); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
   delUser: function (d) { if (!confirm(d.n + ' 계정과 모든 기록을 지울까요? 되돌릴 수 없어요.')) return; rpc('admin_delete_user', { p_id: d.id }).then(function () { toast('지웠어요'); closeDr(); if (S.view === 'users') usLoad(); }).catch(function (e) { toast(e.message); }); },
-  delGroup: function (d) { if (!confirm("'" + d.n + "' 내기를 지울까요? 되돌릴 수 없어요.")) return; rpc('admin_group_delete', { p_id: d.id }).then(function () { toast('지웠어요'); closeDr(); grLoad(); }).catch(function (e) { toast(e.message); }); },
+  delGroup: function (d) { if (!confirm("'" + d.n + "' 대결을 지울까요? 되돌릴 수 없어요.")) return; rpc('admin_group_delete', { p_id: d.id }).then(function () { toast('지웠어요'); closeDr(); grLoad(); }).catch(function (e) { toast(e.message); }); },
   ntSave: function () { rpc('admin_notice_set', { p_text: $('#nt').value }).then(function () { toast($('#nt').value.trim() ? '공지를 올렸어요' : '공지를 내렸어요'); }).catch(function (e) { toast(e.message); }); },
   detSave: function () { var v; try { v = JSON.parse($('#det').value); } catch (e) { toast('JSON 형식이 올바르지 않아요'); return; } if (!confirm('감지 설정을 바꿀까요? 모든 사용자에게 적용돼요.')) return; rpc('admin_config_set', { p_value: v }).then(function () { toast('저장했어요'); }).catch(function (e) { toast(e.message); }); }
 };
@@ -325,7 +325,7 @@ document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') cl
 var demo = (function () {
   var now = Date.now(), D = 864e5, names = ['태오', '지은', '현우', '도윤', '서연', '유나', '준호', '시우', '채원', '민서', '하준', '예린', '건우', '소율'];
   function rnd(i) { var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
-  var users = names.map(function (n, i) { return { id: '0000000' + i + '-demo', nickname: n, created_at: new Date(now - (i * 1.7 + 0.2) * D).toISOString(), banned: i === 9, banned_until: i === 9 ? new Date(now + 5 * D).toISOString() : null, ban_reason: i === 9 ? '부적절한 내기 이름' : null, anonymous: i % 3 === 1, provider: i % 3 === 1 ? '' : 'kakao', email: '', last_sync: i === 11 ? null : new Date(now - rnd(i) * 30 * 36e5).toISOString(), app_version: '1.0.0', usage_ok: i !== 11, a11y_ok: i % 4 !== 2, n_groups: Math.floor(rnd(i + 3) * 4) }; });
+  var users = names.map(function (n, i) { return { id: '0000000' + i + '-demo', nickname: n, created_at: new Date(now - (i * 1.7 + 0.2) * D).toISOString(), banned: i === 9, banned_until: i === 9 ? new Date(now + 5 * D).toISOString() : null, ban_reason: i === 9 ? '부적절한 대결 이름' : null, anonymous: i % 3 === 1, provider: i % 3 === 1 ? '' : 'kakao', email: '', last_sync: i === 11 ? null : new Date(now - rnd(i) * 30 * 36e5).toISOString(), app_version: '1.0.0', usage_ok: i !== 11, a11y_ok: i % 4 !== 2, n_groups: Math.floor(rnd(i + 3) * 4) }; });
   var groups = [['쇼츠 끊기 대결', 'duel', 2, '진 사람이 커피 사기', ['yt_shorts', 'ig_reels']], ['우리 가족 디톡스', 'party', 14, '꼴찌가 주말 설거지', ['youtube', 'instagram']], ['릴스 참기 한 판', 'duel', 2, '', ['ig_reels']], ['회사 3팀 게임 금지', 'party', 7, '1등에게 점심', ['games']], ['틱톡 줄이기', 'duel', 1, '', ['tiktok']]].map(function (g, i) {
     return { id: 'g' + i + '-demo', name: g[0], kind: g[1], status: i === 4 ? 'pending' : 'active', invite_code: ['K7QM2X', 'P3WD9A', 'R8TN4C', 'M2HV6B', 'Z5JX3D'][i], targets: g[4], penalty: g[3], baseline_min: 120, duration_days: i === 1 ? null : 7, start_at: new Date(now - (i + 2) * D).toISOString(), end_at: i === 2 ? new Date(now - D).toISOString() : i === 1 ? null : new Date(now + (5 - i) * D).toISOString(), created_at: new Date(now - (i + 2) * D).toISOString(), ended: i === 2, owner_nickname: names[i], n_members: g[2] };
   });
@@ -333,7 +333,7 @@ var demo = (function () {
     { kind: 'ask', nickname: '지은', user_id: users[1].id, body: '릴스 시간이 실제보다 적게 나오는 것 같아요. 인스타 업데이트한 뒤부터 그래요.', device: 'SM-S921N / Android 15', app_version: '1.0.0', status: 'new' },
     { kind: 'ask', nickname: '현우', user_id: users[2].id, body: '주간 결과를 카톡으로 공유하는 기능이 있으면 좋겠어요!', device: 'SM-A546S / Android 14', app_version: '1.0.0', status: 'new' },
     { kind: 'ask', nickname: '서연', user_id: users[4].id, body: '알림이 15분쯤 늦게 와요.', device: 'Pixel 8 / Android 16', app_version: '1.0.0', status: 'done', note: '푸시 붙이면 해결 예정' },
-    { kind: 'report', nickname: '도윤', user_id: users[3].id, body: '벌칙에 돈을 걸자고 적어 놨어요.', device: '', app_version: '', status: 'new', target_user: users[9].id, target_group: 'g3-demo', target_label: '사용자: 민서 / 내기: 회사 3팀 게임 금지 (벌칙: 1등에게 점심)' }
+    { kind: 'report', nickname: '도윤', user_id: users[3].id, body: '벌칙에 돈을 걸자고 적어 놨어요.', device: '', app_version: '', status: 'new', target_user: users[9].id, target_group: 'g3-demo', target_label: '사용자: 민서 / 대결: 회사 3팀 게임 금지 (벌칙: 1등에게 점심)' }
   ].map(function (x, i) { x.id = 'f' + i; x.created_at = new Date(now - (i * 7 + 1) * 36e5).toISOString(); x.note = x.note || ''; return x; });
   var notice = { text: '' }, det = { yt_shorts: { pkgs: ['com.google.android.youtube'], ids: ['reel_recycler', 'reel_player_page_container', 'reel_watch_fragment_root', 'reel_watch_player'] }, ig_reels: { pkgs: ['com.instagram.android'], ids: ['clips_viewer_view_pager', 'clips_video_container', 'clips_viewer_container'] } };
   function page(rows, a) { return { total: rows.length, rows: rows.slice(a.p_offset || 0, (a.p_offset || 0) + (a.p_limit || 50)) }; }
